@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flashcards</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Flashcard Quiz</h1>
+    {% for card in flashcards %}
+        <div class="card">
+            <div class="question">{{ card.question }}</div>
+            <button onclick="this.nextElementSibling.style.display='block'; this.style.display='none'">Show Answer</button>
+            <div class="answer" style="display:none;">{{ card.answer }}</div>
+        </div>
+    {% endfor %}
+</body>
+</html>

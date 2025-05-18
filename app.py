@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
 import openpyxl
-import random
 
 app = Flask(__name__)
 
@@ -18,7 +17,6 @@ def load_flashcards(filename="flashcards.xlsx"):
 @app.route('/')
 def index():
     flashcards = load_flashcards()
-    random.shuffle(flashcards)
     return render_template('index.html', flashcards=flashcards)
 
 if __name__ == '__main__':

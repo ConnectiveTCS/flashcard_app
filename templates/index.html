@@ -3,15 +3,86 @@
 <head>
     <title>Flashcards</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>Flashcard Quiz</h1>
-    {% for card in flashcards %}
-        <div class="card">
-            <div class="question">{{ card.question }}</div>
-            <button onclick="this.nextElementSibling.style.display='block'; this.style.display='none'">Show Answer</button>
-            <div class="answer" style="display:none;">{{ card.answer }}</div>
+<body class="bg-gradient-to-br from-blue-200 to-purple-300 min-h-screen flex flex-col items-center justify-center overflow-hidden">
+    <h1 class="text-4xl font-bold mb-8 text-gray-800 drop-shadow-lg">Flashcard Quiz</h1>
+    <div id="flashcard-container" class="w-full h-[36.5rem] flex flex-col items-center">
+        <div id="card" class="relative w-[80%] h-full perspective mb-6">
+            <!-- Card inner -->
+            <div id="card-inner" class="transition-transform duration-500 w-full h-full cursor-pointer" onclick="flipCard()">
+                <div id="card-front" class="absolute w-full h-full bg-white rounded-xl shadow-xl flex items-center justify-center text-2xl font-semibold text-gray-800 backface-hidden p-6">
+                    <!-- Question will be injected here -->
+                </div>
+                <div id="card-back" class="absolute w-full h-full bg-indigo-500 rounded-xl shadow-xl flex items-center justify-center text-2xl font-semibold text-white backface-hidden p-6 rotate-y-180">
+                    <!-- Answer will be injected here -->
+                </div>
+            </div>
         </div>
-    {% endfor %}
+        <div class="flex gap-4">
+            <button onclick="prevCard()" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded shadow text-gray-700 font-semibold">Previous</button>
+            <button onclick="nextCard()" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 rounded shadow text-white font-semibold">Next</button>
+        </div>
+        <div id="card-counter" class="mt-4 text-gray-600 font-medium"></div>
+    </div>
+    <script>
+        const flashcards = {{ flashcards|tojson|safe }};
+        let current = 0;
+        let flipped = false;
+
+        function renderCard() {
+            const card = flashcards[current];
+            document.getElementById('card-front').textContent = card.question;
+            document.getElementById('card-back').textContent = card.answer;
+            document.getElementById('card-counter').textContent = `Card ${current + 1} of ${flashcards.length}`;
+            // Reset flip
+            document.getElementById('card-inner').style.transform = 'rotateY(0deg)';
+            flipped = false;
+        }
+
+        function flipCard() {
+            const cardInner = document.getElementById('card-inner');
+            if (!flipped) {
+                cardInner.style.transform = 'rotateY(180deg)';
+                flipped = true;
+            } else {
+                cardInner.style.transform = 'rotateY(0deg)';
+                flipped = false;
+            }
+        }
+
+        function nextCard() {
+            if (current < flashcards.length - 1) {
+                current++;
+                renderCard();
+            }
+        }
+
+        function prevCard() {
+            if (current > 0) {
+                current--;
+                renderCard();
+            }
+        }
+
+        // Tailwind custom class for 3D flip
+        document.head.insertAdjacentHTML('beforeend', `<style>
+            .perspective { perspective: 1000px; }
+            #card-inner { 
+                transition: transform 0.5s; 
+                transform-style: preserve-3d;
+            }
+            .backface-hidden {
+                backface-visibility: hidden;
+            }
+            .rotate-y-180 {
+                transform: rotateY(180deg);
+            }
+        </style>`);
+
+        // Initial render
+        renderCard();
+    </script>
 </body>
 </html>

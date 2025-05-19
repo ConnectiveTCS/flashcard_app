@@ -11,6 +11,10 @@ def load_flashcards(filename="flashcards.xlsx"):
     for row in sheet.iter_rows(min_row=2, values_only=True):
         question, answer = row
         if question and answer:
+            # split bullets on "- " into separate lines
+            if "- " in answer:
+                parts = [part.strip() for part in answer.split("- ") if part.strip()]
+                answer = "\n".join(f"- {part}" for part in parts)
             flashcards.append({"question": question, "answer": answer})
     return flashcards
 

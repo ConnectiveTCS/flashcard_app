@@ -152,8 +152,14 @@
         let current = 0;
         let flipped = false;
 
-        // initialize bookmark & correct state
-        flashcards.forEach(c => { c.bookmarked = false; c.correct = null; });
+        // load persisted statuses and initialize state
+        const statuses = JSON.parse(localStorage.getItem('flashcardStatuses') || '{}');
+        flashcards.forEach(c => {
+          const s = statuses[c.question] || {};
+          c.bookmarked = s.bookmarked || false;
+          c.correct   = s.correct   !== undefined ? s.correct : null;
+        });
+
         let filteredFlashcards = flashcards.slice();
 
   function renderCard() {
@@ -205,17 +211,35 @@
 
         function toggleBookmark() {
             flashcards[current].bookmarked = !flashcards[current].bookmarked;
+            // persist change
+            statuses[flashcards[current].question] = {
+              bookmarked: flashcards[current].bookmarked,
+              correct:    flashcards[current].correct
+            };
+            localStorage.setItem('flashcardStatuses', JSON.stringify(statuses));
             renderIndex();
             renderCard();
         }
 
         function markCorrect() {
             flashcards[current].correct = true;
+            // persist change
+            statuses[flashcards[current].question] = {
+              bookmarked: flashcards[current].bookmarked,
+              correct:    true
+            };
+            localStorage.setItem('flashcardStatuses', JSON.stringify(statuses));
             renderIndex();
         }
 
         function markIncorrect() {
             flashcards[current].correct = false;
+            // persist change
+            statuses[flashcards[current].question] = {
+              bookmarked: flashcards[current].bookmarked,
+              correct:    false
+            };
+            localStorage.setItem('flashcardStatuses', JSON.stringify(statuses));
             renderIndex();
         }
 
@@ -250,6 +274,7 @@
             filteredFlashcards = sel === 'all'
                 ? flashcards
                 : flashcards.filter(c => (c.module || 'Uncategorized') === sel);
+                //add more filter categories as needed
             current = 0;
             renderCard();
             renderIndex();

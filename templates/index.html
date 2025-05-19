@@ -162,27 +162,35 @@
 
         let filteredFlashcards = flashcards.slice();
 
-  function renderCard() {
-    const card = flashcards[current];
-    document.getElementById('card-front').textContent = card.question;
+        function renderCard() {
+          const card = filteredFlashcards[current];          // use filtered list
+          document.getElementById('card-front').textContent = card.question;
 
-    // split on newlines and wrap each in <p>, then insert an extra <br> between them
-    const htmlAnswer = card.answer
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length)
-      .map(line => `<p>${line}</p>`)
-      .join('<br>');
+          // split into paragraphs on blank lines
+          const paragraphs = card.answer.split(/\n\s*\n/);
+          const htmlAnswer = paragraphs
+            .map(p => {
+              // if any "- " appears, treat as a flat list
+              if (p.includes('- ')) {
+                // drop any leading "- ", then split on "- "
+                const items = p.replace(/^\s*-\s*/, '').split(/-\s+/);
+                return `<ul class="list-disc pl-5">${items
+                  .map(i => `<li>${i.trim().replace(/\n/g,'<br><br>')}</li>`)
+                  .join('')}</ul>`;
+              }
+              // otherwise normal paragraph
+              return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+            })
+            .join('');
+          document.getElementById('card-back').innerHTML = htmlAnswer;
 
-    document.getElementById('card-back').innerHTML = htmlAnswer;
-
-    document.getElementById('card-counter').textContent =
-      `Card ${current + 1} of ${flashcards.length}`;
-    document.getElementById('card-inner').style.transform = 'rotateY(0deg)';
-    flipped = false;
-    document.querySelector('button[onclick="toggleBookmark()"]').textContent =
-      card.bookmarked ? 'Unbookmark' : 'Bookmark';
-  }
+          document.getElementById('card-counter').textContent =
+            `Card ${current + 1} of ${filteredFlashcards.length}`;  // update total
+          document.getElementById('card-inner').style.transform = 'rotateY(0deg)';
+          flipped = false;
+          document.querySelector('button[onclick="toggleBookmark()"]').textContent =
+            card.bookmarked ? 'Unbookmark' : 'Bookmark';
+        }
 
         function flipCard() {
             const cardInner = document.getElementById('card-inner');
@@ -196,7 +204,7 @@
         }
 
         function nextCard() {
-            if (current < flashcards.length - 1) {
+            if (current < filteredFlashcards.length - 1) {
                 current++;
                 renderCard();
             }
@@ -244,28 +252,43 @@
         }
 
         function goToCard(idx) {
-            current = flashcards.indexOf(filteredFlashcards[idx]);
+            current = idx;          // idx refers to position in filteredFlashcards
             renderCard();
         }
 
         function renderIndex() {
             const container = document.getElementById('index-container');
             const modules = {};
+            const selectedModule = document.getElementById('module-filter').value;
+            
+            // Group the filtered flashcards by module
             filteredFlashcards.forEach((card, i) => {
                 const mod = card.module || 'Uncategorized';
                 (modules[mod] = modules[mod] || []).push({ i, card });
             });
+            
             let html = '';
             for (const [mod, items] of Object.entries(modules)) {
-                html += `<div class="mb-2"><h3 class="font-bold">${mod}</h3><ul class="list-disc pl-5">`;
+                // Only show module heading when in "all" view
+                if (selectedModule === 'all') {
+                    html += `<div class="mb-2"><h3 class="font-bold">${mod}</h3>`;
+                }
+                
+                html += `<ul class="list-disc pl-5">`;
                 items.forEach(({ i, card }) => {
                     const star = card.bookmarked ? '⭐' : '';
                     const status = card.correct === true ? '✔️' : card.correct === false ? '❌' : '';
-                    const global = flashcards.indexOf(filteredFlashcards[i]) + 1;
-                    html += `<li class="cursor-pointer py-1 px-2 rounded hover:bg-gray-100" onclick="goToCard(${i})">Card ${global} ${star} ${status}</li>`;
+                    // Use sequential numbering within the filtered list
+                    const cardNumber = i + 1;
+                    html += `<li class="cursor-pointer py-1 px-2 rounded hover:bg-gray-100" onclick="goToCard(${i})">Card ${cardNumber} ${star} ${status}</li>`;
                 });
-                html += '</ul></div>';
+                html += `</ul>`;
+                
+                if (selectedModule === 'all') {
+                    html += `</div>`;
+                }
             }
+            
             container.innerHTML = html;
         }
 

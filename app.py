@@ -1,21 +1,24 @@
 from flask import Flask, render_template, request, redirect, url_for
-import openpyxl
+import csv
 
 app = Flask(__name__)
 
-def load_flashcards(filename="flashcards.xlsx"):
-    workbook = openpyxl.load_workbook(filename)
-    sheet = workbook.active
+def load_flashcards():
     flashcards = []
-
-    for row in sheet.iter_rows(min_row=2, values_only=True):
-        question, answer = row
-        if question and answer:
-            # split bullets on "- " into separate lines
-            if "- " in answer:
-                parts = [part.strip() for part in answer.split("- ") if part.strip()]
-                answer = "\n".join(f"- {part}" for part in parts)
-            flashcards.append({"question": question, "answer": answer})
+    with open('flashcards.csv', newline='', encoding='utf-8') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if not row:
+                continue
+            # unpack with optional module column
+            q = row[0]
+            a = row[1] if len(row) > 1 else ''
+            m = row[2] if len(row) > 2 else None
+            flashcards.append({
+                'question': q,
+                'answer': a,
+                'module': m
+            })
     return flashcards
 
 @app.route('/')

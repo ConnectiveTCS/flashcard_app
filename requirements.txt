@@ -1,0 +1,8 @@
+# Pip Requirements File
+# This file contains the list of Python packages required for the project.
+# Use the following format: package_name==version_number
+# Example:
+# requests==2.25.1
+requests==2.28.1
+flask==2.2.2
+openpyxl==3.0.10

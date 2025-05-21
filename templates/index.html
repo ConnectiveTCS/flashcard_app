@@ -31,14 +31,14 @@
       tabindex="-1"
       aria-labelledby="drawer-label"
     >
-      <div class="w-full sm:w-1/2 mb-4">
+      <div class="w-full sm:w-full mb-4">
         <label for="module-filter" class="text-gray-700 font-medium mb-2"
           >Filter by Module:</label
         >
         <select
           id="module-filter"
           onchange="applyFilter()"
-          class="px-3 py-1 rounded border"
+          class="px-3 py-1 rounded border w-full"
         >
           <option value="all">All</option>
           <!-- module options injected by JS -->
@@ -77,6 +77,8 @@
             </div>
           </div>
         </div>
+        <!-- Add card counter display -->
+        <div id="card-counter" class="text-lg text-center mb-4 font-medium">Card 1 of 1</div>
         <div class="text-center fixed left-2 right-2 bottom-2">
           <button
             onclick="prevCard()"
@@ -206,14 +208,14 @@
         function nextCard() {
             if (current < filteredFlashcards.length - 1) {
                 current++;
-                renderCard();
+                renderCard(); // This already resets to front side
             }
         }
 
         function prevCard() {
             if (current > 0) {
                 current--;
-                renderCard();
+                renderCard(); // This already resets to front side
             }
         }
 

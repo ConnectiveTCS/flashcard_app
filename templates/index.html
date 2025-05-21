@@ -258,6 +258,36 @@
             renderCard();
         }
 
+        // Add swipe functionality for mobile navigation
+        function initSwipeEvents() {
+            const card = document.getElementById('card');
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            card.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            }, false);
+            
+            card.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, false);
+            
+            function handleSwipe() {
+                const swipeThreshold = 50; // minimum distance required for a swipe
+                const swipeDistance = touchEndX - touchStartX;
+                
+                if (swipeDistance > swipeThreshold) {
+                    // Swiped right -> previous card
+                    prevCard();
+                } else if (swipeDistance < -swipeThreshold) {
+                    // Swiped left -> next card
+                    nextCard();
+                }
+                // If swipe distance is less than threshold, do nothing (prevent accidental swipes)
+            }
+        }
+
         function renderIndex() {
             const container = document.getElementById('index-container');
             const modules = {};
@@ -329,6 +359,7 @@
 
         // Initial render
         renderCard();
+        initSwipeEvents(); // Initialize swipe detection
     </script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
   </body>

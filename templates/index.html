@@ -9,6 +9,111 @@
       href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="./mobilePopup.css" />
+    <script src="./mobilePopup.js"></script>
+    <style>
+      .mobile-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.mobile-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+    max-width: 90%;
+    width: 400px;
+    text-align: center;
+    animation: slideIn 0.4s ease-out;
+}
+
+.mobile-popup-content h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 1.5em;
+}
+
+.mobile-popup-content p {
+    margin: 15px 0;
+    color: #555;
+}
+
+.mobile-popup-close {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.mobile-popup-close:hover {
+    background-color: #45a049;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translate(-50%, -60%); opacity: 0; }
+    to { transform: translate(-50%, -50%); opacity: 1; }
+}
+
+    </style>
+    <script>document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is not already on mobile
+    if (window.innerWidth > 768) {
+        // Wait 5 seconds before showing the popup
+        setTimeout(function() {
+            showMobilePopup();
+        }, 5000);
+    }
+});
+
+function showMobilePopup() {
+    // Create popup elements
+    const overlay = document.createElement('div');
+    overlay.className = 'mobile-popup-overlay';
+    
+    const popup = document.createElement('div');
+    popup.className = 'mobile-popup';
+    
+    // Popup content
+    popup.innerHTML = `
+        <div class="mobile-popup-content">
+            <h3>On Mobile?</h3>
+            <p>Switch to full screen for a more immersive flashcard learning experience.</p>
+            <button id="closePopup" class="mobile-popup-close">Got it</button>
+        </div>
+    `;
+    
+    // Add to DOM
+    document.body.appendChild(overlay);
+    document.body.appendChild(popup);
+    
+    // Add event listener to close button
+    document.getElementById('closePopup').addEventListener('click', function() {
+        overlay.remove();
+        popup.remove();
+    });
+}
+</script>
   </head>
 
   <body
@@ -25,6 +130,12 @@
         Index
       </button>
     </div>
+    <button
+      onclick="toggleFullscreen()"
+      class="absolute top-4 right-4 px-4 py-2 bg-blue-400 hover:bg-blue-500 rounded shadow text-white font-semibold"
+    >
+      Fullscreen
+    </button>
     <div
       id="drawer-example"
       class="fixed top-0 left-0 z-40 h-screen p-4 overflow-y-auto transition-transform -translate-x-full bg-white w-80 dark:bg-gray-800"
@@ -65,20 +176,22 @@
           >
             <div
               id="card-front"
-              class="absolute w-full h-full bg-white rounded-xl shadow-xl flex items-center justify-center text-2xl font-semibold text-gray-800 backface-hidden p-6"
+              class="absolute w-full h-full bg-white rounded-xl shadow-xl flex items-center justify-center text-base md:text-2xl font-semibold text-gray-800 backface-hidden p-6"
             >
               <!-- Question will be injected here -->
             </div>
             <div
               id="card-back"
-              class="absolute w-full h-full bg-indigo-500 rounded-xl shadow-xl flex flex-col items-start justify-center text-2xl font-semibold text-white backface-hidden p-6 rotate-y-180"
+              class="absolute w-full h-full bg-indigo-500 rounded-xl shadow-xl flex flex-col items-start justify-center text-base md:text-2xl font-semibold text-white backface-hidden p-6 rotate-y-180"
             >
               <!-- Answer will be injected here -->
             </div>
           </div>
         </div>
         <!-- Add card counter display -->
-        <div id="card-counter" class="text-lg text-center mb-4 font-medium">Card 1 of 1</div>
+        <div id="card-counter" class="text-lg text-center mb-4 font-medium">
+          Card 1 of 1
+        </div>
         <div class="text-center fixed left-2 right-2 bottom-2">
           <button
             onclick="prevCard()"
@@ -108,30 +221,32 @@
           tabindex="-1"
           aria-labelledby="drawer-label"
         >
-          <button
-            onclick="toggleBookmark()"
-            class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 rounded shadow text-gray-800 font-semibold"
-          >
-            Bookmark
-          </button>
-          <button
-            onclick="markCorrect()"
-            class="px-4 py-2 bg-green-400 hover:bg-green-500 rounded shadow text-white font-semibold"
-          >
-            Correct
-          </button>
-          <button
-            onclick="markIncorrect()"
-            class="px-4 py-2 bg-red-400 hover:bg-red-500 rounded shadow text-white font-semibold"
-          >
-            Incorrect
-          </button>
-          <button
-            onclick="toggleFullscreen()"
-            class="px-4 py-2 bg-blue-400 hover:bg-blue-500 rounded shadow text-white font-semibold"
-          >
-            Fullscreen
-          </button>
+          <div class="grid grid-cols-2 md:grid-cols-4 items-center gap-2">
+            <button
+              onclick="toggleBookmark()"
+              class="col-span-1 px-4 py-2 bg-yellow-400 hover:bg-yellow-500 rounded shadow text-gray-800 font-semibold"
+            >
+              Bookmark
+            </button>
+            <button
+              onclick="markCorrect()"
+              class="col-span-1 px-4 py-2 bg-green-400 hover:bg-green-500 rounded shadow text-white font-semibold"
+            >
+              Correct
+            </button>
+            <button
+              onclick="markIncorrect()"
+              class="col-span-1 px-4 py-2 bg-red-400 hover:bg-red-500 rounded shadow text-white font-semibold"
+            >
+              Incorrect
+            </button>
+            <button
+              onclick="toggleFullscreen()"
+              class="col-span-1 px-4 py-2 bg-blue-400 hover:bg-blue-500 rounded shadow text-white font-semibold"
+            >
+              Fullscreen
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -148,7 +263,7 @@
 
       // ...initial render etc...
     </script>
-    
+
     <script>
         const flashcards = {{ flashcards| tojson | safe }};
         let current = 0;
@@ -263,20 +378,20 @@
             const card = document.getElementById('card');
             let touchStartX = 0;
             let touchEndX = 0;
-            
+
             card.addEventListener('touchstart', function(e) {
                 touchStartX = e.changedTouches[0].screenX;
             }, false);
-            
+
             card.addEventListener('touchend', function(e) {
                 touchEndX = e.changedTouches[0].screenX;
                 handleSwipe();
             }, false);
-            
+
             function handleSwipe() {
                 const swipeThreshold = 50; // minimum distance required for a swipe
                 const swipeDistance = touchEndX - touchStartX;
-                
+
                 if (swipeDistance > swipeThreshold) {
                     // Swiped right -> previous card
                     prevCard();
@@ -292,20 +407,20 @@
             const container = document.getElementById('index-container');
             const modules = {};
             const selectedModule = document.getElementById('module-filter').value;
-            
+
             // Group the filtered flashcards by module
             filteredFlashcards.forEach((card, i) => {
                 const mod = card.module || 'Uncategorized';
                 (modules[mod] = modules[mod] || []).push({ i, card });
             });
-            
+
             let html = '';
             for (const [mod, items] of Object.entries(modules)) {
                 // Only show module heading when in "all" view
                 if (selectedModule === 'all') {
                     html += `<div class="mb-2"><h3 class="font-bold">${mod}</h3>`;
                 }
-                
+
                 html += `<ul class="list-disc pl-5">`;
                 items.forEach(({ i, card }) => {
                     const star = card.bookmarked ? '⭐' : '';
@@ -315,12 +430,12 @@
                     html += `<li class="cursor-pointer py-1 px-2 rounded hover:bg-gray-100" onclick="goToCard(${i})">Card ${cardNumber} ${star} ${status}</li>`;
                 });
                 html += `</ul>`;
-                
+
                 if (selectedModule === 'all') {
                     html += `</div>`;
                 }
             }
-            
+
             container.innerHTML = html;
         }
 

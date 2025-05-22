@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from werkzeug.utils import secure_filename
 import csv
-import os
 import tempfile
 import shutil
+import os, requests, io
+from your_text_utils import extract_text, chunk_text
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/images'
@@ -132,6 +133,35 @@ def delete_flashcard(index):
     except Exception as e:
         os.unlink(temp_path)
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route("/upload", methods=["POST"])
+def upload():
+    f = request.files.get("file")
+    if not f:
+        return "No file uploaded", 400
+
+    # 1) Extract raw text
+    raw_text = extract_text(f)
+
+    # 2) Split into manageable chunks
+    chunks = chunk_text(raw_text, max_tokens=3000)
+
+    # 3) For each chunk, call Pipedream + OpenAI
+    all_flashcards = []
+    for chunk in chunks:
+        resp = requests.post(
+            os.environ["PIPEDREAM_TRIGGER_URL"],
+            json={"content": chunk}
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        # assume Pipedream returns {"flashcards": "…markdown table…"}
+        all_flashcards.append(data["flashcards"])
+
+    # 4) Combine & send back
+    combined = "\n\n".join(all_flashcards)
+    return jsonify({"flashcards": combined})
 
 if __name__ == '__main__':
     images_dir = os.path.join('static', 'images')

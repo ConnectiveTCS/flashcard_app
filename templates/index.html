@@ -281,7 +281,17 @@ function showMobilePopup() {
 
         function renderCard() {
           const card = filteredFlashcards[current];          // use filtered list
-          document.getElementById('card-front').textContent = card.question;
+          
+          // Create status indicators
+          const bookmarkIndicator = card.bookmarked ? '<span class="absolute top-2 right-2 text-xl">⭐</span>' : '';
+          const statusIndicator = card.correct === true 
+            ? '<span class="absolute top-2 left-2 text-xl">✅</span>' 
+            : card.correct === false 
+              ? '<span class="absolute top-2 left-2 text-xl">❌</span>'
+              : '';
+          
+          document.getElementById('card-front').innerHTML = 
+            `${bookmarkIndicator}${statusIndicator}<div class="w-full text-center pt-6">${card.question}</div>`;
 
           // split into paragraphs on blank lines
           const paragraphs = card.answer.split(/\n\s*\n/);
@@ -299,7 +309,8 @@ function showMobilePopup() {
               return `<p>${p.replace(/\n/g, '<br>')}</p>`;
             })
             .join('');
-          document.getElementById('card-back').innerHTML = htmlAnswer;
+          document.getElementById('card-back').innerHTML = 
+            `${bookmarkIndicator}${statusIndicator}<div class="w-full">${htmlAnswer}</div>`;
 
           document.getElementById('card-counter').textContent =
             `Card ${current + 1} of ${filteredFlashcards.length}`;  // update total

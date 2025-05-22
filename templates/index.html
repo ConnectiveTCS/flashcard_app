@@ -671,6 +671,34 @@
           }
       }
 
+      // Add keyboard navigation
+      document.addEventListener('keydown', function(event) {
+          // ESC key handling for modal
+          if (event.key === 'Escape') {
+              const modal = document.getElementById('imageModal');
+              if (modal.style.display === 'flex') {
+                  modal.style.display = 'none';
+                  document.body.style.overflow = '';
+              }
+          }
+          
+          // Arrow key navigation
+          // Make sure not to capture keyboard events when user is typing in input fields
+          if (document.activeElement.tagName !== 'INPUT' && 
+              document.activeElement.tagName !== 'TEXTAREA') {
+              
+              // Left arrow key - previous card
+              if (event.key === 'ArrowLeft') {
+                  prevCard();
+              }
+              
+              // Right arrow key - next card
+              if (event.key === 'ArrowRight') {
+                  nextCard();
+              }
+          }
+      });
+
       // Close modal with ESC key
       document.addEventListener('keydown', function(event) {
           if (event.key === 'Escape') {

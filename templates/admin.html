@@ -625,117 +625,79 @@
           const flashcards = [];
           const module = document.getElementById('module').value || 'Generated';
           
-          console.log("Parsing content:", content);
+          // Convert HTML to plain text
+          let plainText = content.replace(/<\/?[^>]+(>|$)/g, " ").trim();
           
-          // Special handling for the specific format shown in screenshot
-          // Direct matching for "Question: X Answer: Y Question: Z Answer: W" format
-          const text = content.toString().replace(/<[^>]*>?/gm, ' ');
+          // Handle case where questions and answers run together without breaks
+          plainText = plainText.replace(/\.Question:/g, '. Question:');
+          plainText = plainText.replace(/\?Question:/g, '? Question:');
+          plainText = plainText.replace(/!Question:/g, '! Question:');
+          plainText = plainText.replace(/\)Question:/g, ') Question:');
+          plainText = plainText.replace(/\]Question:/g, '] Question:');
+          plainText = plainText.replace(/\}Question:/g, '} Question:');
+          plainText = plainText.replace(/\nQuestion:/g, '\n Question:');
           
-          console.log("Processing raw text format:", text);
+          // Split the text by Question: pattern 
+          const parts = plainText.split(/(?:^|\n|\s)Question:\s*/);
           
-          // Extract directly with hardcoded pattern for Q&A pairs
-          const pattern = /(Question:[\s]*)(.*?)([\s]*Answer:[\s]*)(.*?)(?=Question:|$)/gs;
-          let match;
-          let found = false;
-          
-          while ((match = pattern.exec(text)) !== null) {
-            // We're explicitly capturing the formats shown in the screenshot
-            const question = match[2].trim();
-            const answer = match[4].trim();
-            
-            if (question && answer) {
-              console.log("FOUND MATCH:");
-              console.log("Q:", question);
-              console.log("A:", answer);
-              found = true;
-              
-              flashcards.push({
-                question: question,
-                answer: answer,
-                module: module
-              });
-            }
+          // Skip the first part if it's empty or doesn't contain an answer pattern
+          let startIndex = 0;
+          if (!parts[0].includes('Answer:')) {
+            startIndex = 1;
           }
           
-          if (found) {
-            console.log(`Successfully parsed ${flashcards.length} flashcards`);
-            return flashcards;
-          }
-          
-          // Fallback: If we're getting here, normal parsing failed
-          // Let's try an even more specific approach for the format we saw
-          console.log("Standard parsing failed, trying emergency parsing mode");
-          
-          // Create an array from a manual split
-          const emergencyMatches = [];
-          const contentStr = text.replace(/\s+/g, ' ').trim();
-          
-          // Split by "Question:" and process each part
-          const parts = contentStr.split(/Question:/g);
-          for (let i = 1; i < parts.length; i++) { // Skip first which might be empty
-            const part = parts[i].trim();
-            const answerIdx = part.indexOf("Answer:");
-            
-            if (answerIdx > 0) {
-              const q = part.substring(0, answerIdx).trim();
-              let a = part.substring(answerIdx + "Answer:".length).trim();
+          // Process each part
+          for (let i = startIndex; i < parts.length; i++) {
+            if (parts[i].trim()) {
+              // Split each part into question and answer
+              const qa = parts[i].split(/(?:^|\n|\s)Answer:\s*/);
               
-              // Get the answer up to the next Question: marker
-              const nextQ = a.indexOf("Question:");
-              if (nextQ > 0) {
-                a = a.substring(0, nextQ).trim();
+              if (qa.length >= 2) {
+                const question = qa[0].trim();
+                const answer = qa.slice(1).join(' ').trim();
+                
+                if (question && answer) {
+                  flashcards.push({
+                    question: question,
+                    answer: answer,
+                    module: module
+                  });
+                }
               }
-              
-              emergencyMatches.push({
-                question: q,
-                answer: a,
-                module: module
-              });
-              
-              console.log("Emergency parsing found:", q, a);
             }
           }
           
-          if (emergencyMatches.length > 0) {
-            console.log(`Emergency parsing found ${emergencyMatches.length} flashcards`);
-            return emergencyMatches;
-          }
-          
-          // Last resort: Show the raw content and let user manually parse
-          console.log("All parsing methods failed, returning debugging info");
-          
-          // Directly extract question-answer pairs from raw content as a last resort
-          const contentLines = contentStr.split(/[\n\r]+/g);
-          const manualPairsRegex = /^Question:(.+?)Answer:(.+)$/i;
-          
-          for (const line of contentLines) {
-            const lineMatch = line.match(manualPairsRegex);
-            if (lineMatch) {
-              flashcards.push({
-                question: lineMatch[1].trim(),
-                answer: lineMatch[2].trim(),
-                module: module
-              });
-            }
-          }
-          
+          // If no flashcards found using the above method, try another approach
           if (flashcards.length === 0) {
-            // If we still can't parse anything, show the user the raw text
-            console.log("Raw text content:", text);
+            // This regex looks for Question: followed by any text, then Answer: followed by any text
+            const regex = /Question:\s*(.*?)(?:\s*Answer:\s*)(.*?)(?=(?:\s*Question:|$))/gs;
+            let match;
             
-            alert("Failed to automatically parse flashcards. The AI output will be shown in a new form where you can edit it as needed.");
+            while ((match = regex.exec(plainText)) !== null) {
+              if (match[1] && match[2]) {
+                flashcards.push({
+                  question: match[1].trim(),
+                  answer: match[2].trim(),
+                  module: module
+                });
+              }
+            }
+          }
+
+          // Debug information if no flashcards were found
+          if (flashcards.length === 0) {
+            console.log('No flashcards found. Text content:', plainText);
             
-            // Add all content as a single flashcard for manual editing
-            document.getElementById('question').value = "Content from AI that needs separation:";
-            document.getElementById('answer').value = text;
-            document.getElementById('module').value = "AI Generated Content";
-            
-            // Return dummy data so the Save button callback doesn't error out
-            return [{
-              question: "AI Content (needs manual editing)",
-              answer: text.substring(0, 100) + "...",
-              module: module
-            }];
+            // Create a simple flashcard with debugging info as a fallback
+            if (plainText.length > 100) {
+              flashcards.push({
+                question: "Debug: Parser couldn't extract flashcards automatically",
+                answer: "The parser couldn't extract flashcards from the AI response. Please manually create flashcards from the text.",
+                module: "Debug"
+              });
+            }
+          } else {
+            console.log(`Found ${flashcards.length} flashcards`);
           }
           
           return flashcards;

@@ -399,6 +399,14 @@
           >
             Save All Flashcards
           </button>
+        <div class="mt-6 flex justify-between">
+          <button
+            id="save-flashcards-btn"
+            type="button"
+            class="px-4 py-2 bg-green-500 hover:bg-green-600 rounded shadow text-white font-semibold"
+          >
+            Save All Flashcards
+          </button>
           <button
             type="button"
             onclick="closeAiResponseModal()"
@@ -600,150 +608,6 @@
             console.error('Error:', error);
           });
         });
-        
-        // Handle saving generated flashcards
-        document.getElementById('save-flashcards-btn').addEventListener('click', function() {
-          const responseContent = document.getElementById('aiResponseContent');
-          const flashcardsData = parseFlashcardsFromContent(responseContent.innerHTML);
-          
-          if (flashcardsData.length === 0) {
-            alert('No valid flashcards found to save.');
-            return;
-          }
-          
-          // Show confirmation with count
-          if (!confirm(`Are you sure you want to save ${flashcardsData.length} flashcards?`)) {
-            return;
-          }
-          
-          // Save the flashcards
-          saveGeneratedFlashcards(flashcardsData);
-        });
-        
-        // Function to parse flashcards from content
-        function parseFlashcardsFromContent(content) {
-          const flashcards = [];
-          const module = document.getElementById('module').value || 'Generated';
-          
-          // Convert HTML to plain text
-          let plainText = content.replace(/<\/?[^>]+(>|$)/g, " ").trim();
-          
-          // Handle case where questions and answers run together without breaks
-          plainText = plainText.replace(/\.Question:/g, '. Question:');
-          plainText = plainText.replace(/\?Question:/g, '? Question:');
-          plainText = plainText.replace(/!Question:/g, '! Question:');
-          plainText = plainText.replace(/\)Question:/g, ') Question:');
-          plainText = plainText.replace(/\]Question:/g, '] Question:');
-          plainText = plainText.replace(/\}Question:/g, '} Question:');
-          plainText = plainText.replace(/\nQuestion:/g, '\n Question:');
-          
-          // Split the text by Question: pattern 
-          const parts = plainText.split(/(?:^|\n|\s)Question:\s*/);
-          
-          // Skip the first part if it's empty or doesn't contain an answer pattern
-          let startIndex = 0;
-          if (!parts[0].includes('Answer:')) {
-            startIndex = 1;
-          }
-          
-          // Process each part
-          for (let i = startIndex; i < parts.length; i++) {
-            if (parts[i].trim()) {
-              // Split each part into question and answer
-              const qa = parts[i].split(/(?:^|\n|\s)Answer:\s*/);
-              
-              if (qa.length >= 2) {
-                const question = qa[0].trim();
-                const answer = qa.slice(1).join(' ').trim();
-                
-                if (question && answer) {
-                  flashcards.push({
-                    question: question,
-                    answer: answer,
-                    module: module
-                  });
-                }
-              }
-            }
-          }
-          
-          // If no flashcards found using the above method, try another approach
-          if (flashcards.length === 0) {
-            // This regex looks for Question: followed by any text, then Answer: followed by any text
-            const regex = /Question:\s*(.*?)(?:\s*Answer:\s*)(.*?)(?=(?:\s*Question:|$))/gs;
-            let match;
-            
-            while ((match = regex.exec(plainText)) !== null) {
-              if (match[1] && match[2]) {
-                flashcards.push({
-                  question: match[1].trim(),
-                  answer: match[2].trim(),
-                  module: module
-                });
-              }
-            }
-          }
-
-          // Debug information if no flashcards were found
-          if (flashcards.length === 0) {
-            console.log('No flashcards found. Text content:', plainText);
-            
-            // Create a simple flashcard with debugging info as a fallback
-            if (plainText.length > 100) {
-              flashcards.push({
-                question: "Debug: Parser couldn't extract flashcards automatically",
-                answer: "The parser couldn't extract flashcards from the AI response. Please manually create flashcards from the text.",
-                module: "Debug"
-              });
-            }
-          } else {
-            console.log(`Found ${flashcards.length} flashcards`);
-          }
-          
-          return flashcards;
-        }
-        
-        // Function to save generated flashcards
-        function saveGeneratedFlashcards(flashcardsData) {
-          const loadingSpinner = document.getElementById('loading-spinner');
-          
-          // Show loading spinner
-          loadingSpinner.classList.remove('hidden');
-          
-          fetch('/save_generated_flashcards', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ flashcards: flashcardsData })
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then(data => {
-            // Hide loading spinner
-            loadingSpinner.classList.add('hidden');
-            
-            if (data.error) {
-              alert('Error saving flashcards: ' + data.error);
-            } else {
-              alert(`Successfully saved ${data.count} flashcards!`);
-              // Close the modal
-              closeAiResponseModal();
-              // Reload the page to show the new flashcards
-              window.location.reload();
-            }
-          })
-          .catch(error => {
-            // Hide loading spinner
-            loadingSpinner.classList.add('hidden');
-            alert('Error saving flashcards: ' + error.message);
-            console.error('Error:', error);
-          });
-        }
       });
     </script>
     

@@ -155,6 +155,12 @@ function showMobilePopup() {
           <!-- module options injected by JS -->
         </select>
       </div>
+      <button 
+        onclick="clearAllStatuses()"
+        class="w-full mb-4 px-4 py-2 bg-red-400 hover:bg-red-500 rounded shadow text-white font-semibold"
+      >
+        Clear All Status Indicators
+      </button>
       <div
         id="index-container"
         class="w-full max-h-full overflow-y-auto bg-white bg-opacity-50 rounded-lg p-2 shadow-inner"
@@ -459,6 +465,27 @@ function showMobilePopup() {
             current = 0;
             renderCard();
             renderIndex();
+        }
+
+        function clearAllStatuses() {
+            // Confirm before clearing
+            if (confirm("Are you sure you want to clear all bookmarks and correct/incorrect indicators?")) {
+                // Reset all status indicators in memory
+                flashcards.forEach(card => {
+                    card.bookmarked = false;
+                    card.correct = null;
+                });
+                
+                // Clear the localStorage
+                localStorage.removeItem('flashcardStatuses');
+                
+                // Reset the statuses object
+                Object.keys(statuses).forEach(key => delete statuses[key]);
+                
+                // Re-render current card and index
+                renderCard();
+                renderIndex();
+            }
         }
 
         // populate filter dropdown and initial index

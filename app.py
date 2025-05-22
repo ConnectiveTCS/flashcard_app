@@ -10,6 +10,10 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/images'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
+# Configuration
+PIPEDREAM_URL = "https://eon3qzp0ncyhk31.m.pipedream.net" # Replace with your Pipedream URL for development
+# Example: PIPEDREAM_URL = "https://eoy872aby7m89h7.m.pipedream.net"
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -137,27 +141,45 @@ def delete_flashcard(index):
 
 @app.route("/upload", methods=["POST"])
 def upload():
-    f = request.files.get("file")
-    if not f:
-        return "No file uploaded", 400
-
-    # 1) Extract raw text
-    raw_text = extract_text(f)
+    # Check if we're getting a file or text input
+    if 'file' in request.files and request.files['file'].filename:
+        f = request.files.get("file")
+        # 1) Extract raw text
+        raw_text = extract_text(f)
+    elif 'text' in request.form and request.form['text'].strip():
+        # If text was provided directly
+        raw_text = request.form['text']
+    else:
+        return jsonify({"error": "No file or text provided"}), 400
 
     # 2) Split into manageable chunks
     chunks = chunk_text(raw_text, max_tokens=3000)
 
+    # Get the Pipedream URL from environment variable or fallback to the constant
+    pipedream_url = os.environ.get("PIPEDREAM_TRIGGER_URL", PIPEDREAM_URL)
+    
+    if not pipedream_url:
+        error_msg = """
+        No Pipedream URL configured. Please do one of the following:
+        1. Set the PIPEDREAM_TRIGGER_URL environment variable, or
+        2. Update the PIPEDREAM_URL constant in the app.py file
+        """
+        return jsonify({"error": error_msg.strip()}), 500
+
     # 3) For each chunk, call Pipedream + OpenAI
     all_flashcards = []
-    for chunk in chunks:
-        resp = requests.post(
-            os.environ["PIPEDREAM_TRIGGER_URL"],
-            json={"content": chunk}
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        # assume Pipedream returns {"flashcards": "…markdown table…"}
-        all_flashcards.append(data["flashcards"])
+    try:
+        for chunk in chunks:
+            resp = requests.post(
+                pipedream_url,
+                json={"content": chunk}
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            # assume Pipedream returns {"flashcards": "…markdown table…"}
+            all_flashcards.append(data["flashcards"])
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"API request failed: {str(e)}"}), 500
 
     # 4) Combine & send back
     combined = "\n\n".join(all_flashcards)

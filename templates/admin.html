@@ -49,12 +49,41 @@
 
       <div class="mb-10">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Add New Flashcard</h2>
-        <div>
-          <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" accept=".pdf,.docx" required />
-            <button type="submit" class="bg-blue-500 text-white p-4">Upload and Generate Flashcards</button>
+        
+        <!-- AI Flashcard Generation Section -->
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
+          <h3 class="text-lg font-semibold mb-4">Generate Flashcards with AI</h3>
+          
+          <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data" class="space-y-4">
+            <div>
+              <label for="upload-file" class="block text-gray-700 font-medium mb-2">Upload Document:</label>
+              <input type="file" name="file" id="upload-file" accept=".pdf,.docx" class="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:border-0
+                file:text-sm file:font-semibold
+                file:text-blue-700
+                file:bg-blue-100" />
+              <p class="text-sm text-gray-500 mt-1">Supported formats: PDF, DOCX</p>
+            </div>
+            
+            <div>
+              <label for="custom-input" class="block text-gray-700 font-medium mb-2">Or Enter Text:</label>
+              <textarea id="custom-input" rows="4" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Enter text to generate flashcards from..."></textarea>
+            </div>
+            
+            <div class="pt-2">
+              <button id="generate-btn" type="button" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md flex items-center">
+                <span>Generate Flashcards</span>
+                <svg id="loading-spinner" class="ml-2 h-5 w-5 animate-spin hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </button>
+            </div>
           </form>
         </div>
+
+        <!-- Regular Flashcard Form -->
         <form
           action="/add_flashcard"
           method="POST"
@@ -73,7 +102,6 @@
               required
             ></textarea>
           </div>
-
           <div>
             <label for="answer" class="block text-gray-700 font-semibold mb-2"
               >Answer:</label
@@ -90,7 +118,6 @@
               bullet points.
             </p>
           </div>
-
           <div>
             <label for="module" class="block text-gray-700 font-semibold mb-2"
               >Module:</label
@@ -100,9 +127,9 @@
               id="module"
               name="module"
               class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
             />
           </div>
-
           <div>
             <label for="image" class="block text-gray-700 font-semibold mb-2"
               >Image (optional):</label
@@ -118,7 +145,6 @@
               Supported formats: PNG, JPG, JPEG, GIF
             </p>
           </div>
-
           <div class="pt-4">
             <button
               type="submit"
@@ -130,88 +156,86 @@
         </form>
       </div>
 
-      <div>
-        <h2 class="text-xl font-bold text-gray-800 mb-4">
-          Existing Flashcards
-        </h2>
-        <div class="overflow-x-auto">
-          <table class="min-w-full bg-white border border-gray-200">
-            <thead>
-              <tr>
-                <th
-                  class="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Question
-                </th>
-                <th
-                  class="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Answer
-                </th>
-                <th
-                  class="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Module
-                </th>
-                <th
-                  class="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Image
-                </th>
-                <th
-                  class="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for card in flashcards %}
-              <tr>
-                <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm">
-                  <div class="max-h-24 overflow-y-auto">
-                    {{ card.question }}
-                  </div>
-                </td>
-                <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm">
-                  <div class="max-h-24 overflow-y-auto">{{ card.answer }}</div>
-                </td>
-                <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm">
-                  {{ card.module or 'Uncategorized' }}
-                </td>
-                <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm">
-                  {% if card.link %}
-                  <img
-                    src="{{ card.link }}"
-                    alt="Flashcard image"
-                    class="max-h-16"
-                    onerror="this.style.display='none';this.parentNode.textContent='Image not found';"
-                  />
-                  {% else %} None {% endif %}
-                </td>
-                <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm">
-                  <div class="flex space-x-2">
-                    <button
-                      type="button"
-                      onclick="openEditModal({{ loop.index0 }})"
-                      class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onclick="confirmDelete({{ loop.index0 }})"
-                      class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+      <h2 class="text-xl font-bold text-gray-800 mb-4">
+        Existing Flashcards
+      </h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200">
+          <thead>
+            <tr>
+              <th
+                class="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+              >
+                Question
+              </th>
+              <th
+                class="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+              >
+                Answer
+              </th>
+              <th
+                class="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+              >
+                Module
+              </th>
+              <th
+                class="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+              >
+                Image
+              </th>
+              <th
+                class="px-4 py-2 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for card in flashcards %}
+            <tr>
+              <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm">
+                <div class="max-h-24 overflow-y-auto">
+                  {{ card.question }}
+                </div>
+              </td>
+              <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm">
+                <div class="max-h-24 overflow-y-auto">{{ card.answer }}</div>
+              </td>
+              <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm">
+                {{ card.module or 'Uncategorized' }}
+              </td>
+              <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm">
+                {% if card.link %}
+                <img
+                  src="{{ card.link }}"
+                  alt="Flashcard image"
+                  class="max-h-16"
+                  onerror="this.style.display='none';this.parentNode.textContent='Image not found';"
+                />
+                {% else %} None {% endif %}
+              </td>
+              <td class="px-4 py-2 border-b border-gray-200 bg-white text-sm">
+                <div class="flex space-x-2">
+                  <button
+                    type="button"
+                    onclick="openEditModal({{ loop.index0 }})"
+                    class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onclick="confirmDelete({{ loop.index0 }})"
+                    class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -233,7 +257,6 @@
             &times;
           </button>
         </div>
-
         <form
           id="editForm"
           method="POST"
@@ -254,7 +277,6 @@
               required
             ></textarea>
           </div>
-
           <div>
             <label
               for="editAnswer"
@@ -269,7 +291,6 @@
               required
             ></textarea>
           </div>
-
           <div>
             <label
               for="editModule"
@@ -281,15 +302,14 @@
               id="editModule"
               name="module"
               class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+              required
             />
           </div>
-
           <div>
             <label class="block text-gray-700 font-semibold mb-2"
               >Current Image:</label
             >
             <div id="currentImageContainer" class="mb-2"></div>
-
             <label
               for="editImage"
               class="block text-gray-700 font-semibold mb-2"
@@ -303,7 +323,6 @@
               class="w-full"
             />
           </div>
-
           <div class="pt-4 flex justify-end space-x-3">
             <button
               type="button"
@@ -334,7 +353,6 @@
           Are you sure you want to delete this flashcard? This action cannot be
           undone.
         </p>
-
         <form id="deleteForm" method="POST" class="flex justify-end space-x-3">
           <button
             type="button"
@@ -350,6 +368,37 @@
             Delete
           </button>
         </form>
+      </div>
+    </div>
+
+    <!-- AI Response Modal -->
+    <div
+      id="aiResponseModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden"
+    >
+      <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-bold text-gray-800">Generated Flashcards</h3>
+          <button
+            type="button"
+            onclick="closeAiResponseModal()"
+            class="text-gray-600 hover:text-gray-800 text-2xl"
+          >
+            &times;
+          </button>
+        </div>
+        <div id="aiResponseContent" class="prose max-w-none">
+          <!-- AI response will be placed here -->
+        </div>
+        <div class="mt-6 flex justify-end">
+          <button
+            type="button"
+            onclick="closeAiResponseModal()"
+            class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded shadow text-gray-800"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
 
@@ -408,13 +457,97 @@
         document.body.style.overflow = ''; // Re-enable scrolling
       }
 
+      function closeAiResponseModal() {
+        document.getElementById('aiResponseModal').classList.add('hidden');
+        document.body.style.overflow = ''; // Re-enable scrolling
+      }
+
       // Close modals with ESC key
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
           closeEditModal();
           closeDeleteModal();
+          closeAiResponseModal();
         }
       });
+
+      // AI Flashcard Generation
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('generate-btn').addEventListener('click', function() {
+          const fileInput = document.getElementById('upload-file');
+          const textInput = document.getElementById('custom-input');
+          const loadingSpinner = document.getElementById('loading-spinner');
+          const responseModal = document.getElementById('aiResponseModal');
+          const responseContent = document.getElementById('aiResponseContent');
+          
+          // Check if either file or text is provided
+          if ((fileInput.files.length === 0) && (textInput.value.trim() === '')) {
+            alert('Please upload a file or enter text to generate flashcards.');
+            return;
+          }
+          
+          // Show loading spinner
+          loadingSpinner.classList.remove('hidden');
+          
+          let formData = new FormData();
+          
+          // If file is uploaded, use that
+          if (fileInput.files.length > 0) {
+            formData.append('file', fileInput.files[0]);
+          } 
+          // Otherwise use the text input
+          else if (textInput.value.trim() !== '') {
+            formData.append('text', textInput.value);
+          }
+          
+          // Make the AJAX request
+          fetch('/upload', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            // Hide loading spinner
+            loadingSpinner.classList.add('hidden');
+            
+            // Check if there was an error
+            if (data.error) {
+              // Display the error in the modal
+              responseContent.innerHTML = `<div class="p-4 bg-red-50 border border-red-200 text-red-700 rounded">
+                <h4 class="font-bold mb-2">Error</h4>
+                <p class="whitespace-pre-line">${data.error}</p>
+              </div>`;
+            } else {
+              // Display the response in the modal
+              if (window.marked) {
+                responseContent.innerHTML = marked.parse(data.flashcards);
+              } else {
+                responseContent.innerHTML = data.flashcards.replace(/\n/g, '<br>');
+              }
+            }
+            
+            // Show the modal
+            responseModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+          })
+          .catch(error => {
+            // Hide loading spinner
+            loadingSpinner.classList.add('hidden');
+            
+            // Show error message
+            alert('Error generating flashcards: ' + error.message);
+            console.error('Error:', error);
+          });
+        });
+      });
     </script>
+    
+    <!-- Include Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </body>
 </html>

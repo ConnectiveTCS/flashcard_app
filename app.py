@@ -138,19 +138,30 @@ def delete_flashcard(index):
         os.unlink(temp_path)
         return jsonify({"success": False, "message": str(e)}), 500
 
+@app.route("/extract-text", methods=["POST"])
+def extract_text_endpoint():
+    """Extract text from uploaded file and return it"""
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+    
+    try:
+        text = extract_text(file)
+        return jsonify({"text": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/upload", methods=["POST"])
 def upload():
-    # Check if we're getting a file or text input
-    if 'file' in request.files and request.files['file'].filename:
-        f = request.files.get("file")
-        # 1) Extract raw text
-        raw_text = extract_text(f)
-    elif 'text' in request.form and request.form['text'].strip():
-        # If text was provided directly
-        raw_text = request.form['text']
-    else:
-        return jsonify({"error": "No file or text provided"}), 400
+    # Always expect text input now, not files
+    if 'text' not in request.form or not request.form['text'].strip():
+        return jsonify({"error": "No text provided"}), 400
+    
+    # Get the text from the form
+    raw_text = request.form['text']
 
     # 2) Split into manageable chunks
     chunks = chunk_text(raw_text, max_tokens=3000)
@@ -166,20 +177,49 @@ def upload():
         """
         return jsonify({"error": error_msg.strip()}), 500
 
-    # 3) For each chunk, call Pipedream + OpenAI
+    # 3) For each chunk, call Pipedream + OpenAI with proper error handling
     all_flashcards = []
     try:
-        for chunk in chunks:
-            resp = requests.post(
-                pipedream_url,
-                json={"content": chunk}
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            # assume Pipedream returns {"flashcards": "…markdown table…"}
-            all_flashcards.append(data["flashcards"])
-    except requests.exceptions.RequestException as e:
-        return jsonify({"error": f"API request failed: {str(e)}"}), 500
+        for i, chunk in enumerate(chunks):
+            try:
+                # Try with POST first (most APIs expect this for JSON data)
+                resp = requests.post(
+                    pipedream_url,
+                    json={"content": chunk}
+                )
+                
+                # If we get an error response, try GET as fallback
+                if resp.status_code >= 400:
+                    resp = requests.get(
+                        pipedream_url,
+                        params={"content": chunk}
+                    )
+                
+                resp.raise_for_status()
+                data = resp.json()
+                
+                # Check if the expected key exists in the response
+                if "flashcards" not in data:
+                    return jsonify({
+                        "error": f"API response missing 'flashcards' field. Response: {data}"
+                    }), 500
+                    
+                all_flashcards.append(data["flashcards"])
+                
+            except requests.exceptions.RequestException as e:
+                # Add more detailed error information
+                error_detail = f"Chunk {i+1}/{len(chunks)}: {str(e)}"
+                if hasattr(e, 'response') and e.response:
+                    error_detail += f"\nStatus code: {e.response.status_code}"
+                    try:
+                        error_detail += f"\nResponse: {e.response.text}"
+                    except:
+                        pass
+                
+                return jsonify({"error": f"API request failed: {error_detail}"}), 500
+                
+    except Exception as e:
+        return jsonify({"error": f"Error processing text: {str(e)}"}), 500
 
     # 4) Combine & send back
     combined = "\n\n".join(all_flashcards)

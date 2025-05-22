@@ -67,8 +67,9 @@
             </div>
             
             <div>
-              <label for="custom-input" class="block text-gray-700 font-medium mb-2">Or Enter Text:</label>
-              <textarea id="custom-input" rows="4" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Enter text to generate flashcards from..."></textarea>
+              <label for="custom-input" class="block text-gray-700 font-medium mb-2">Text Content:</label>
+              <textarea id="custom-input" rows="6" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Upload a document to extract text or enter your own text here..."></textarea>
+              <p id="text-source" class="text-sm italic text-gray-500 mt-1 hidden">Text extracted from file. You can edit it before generating flashcards.</p>
             </div>
             
             <div class="pt-2">
@@ -473,15 +474,69 @@
 
       // AI Flashcard Generation
       document.addEventListener('DOMContentLoaded', function() {
+        // Handle file selection and extract text
+        document.getElementById('upload-file').addEventListener('change', function(e) {
+          const fileInput = e.target;
+          const textArea = document.getElementById('custom-input');
+          const textSource = document.getElementById('text-source');
+          const loadingSpinner = document.getElementById('loading-spinner');
+          
+          if (fileInput.files.length === 0) {
+            return;
+          }
+          
+          // Show loading spinner
+          loadingSpinner.classList.remove('hidden');
+          
+          const file = fileInput.files[0];
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          // Call the extract-text endpoint
+          fetch('/extract-text', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            // Hide loading spinner
+            loadingSpinner.classList.add('hidden');
+            
+            if (data.error) {
+              alert('Error extracting text: ' + data.error);
+              return;
+            }
+            
+            // Populate the textarea with the extracted text
+            textArea.value = data.text;
+            
+            // Show the source note
+            textSource.classList.remove('hidden');
+          })
+          .catch(error => {
+            // Hide loading spinner
+            loadingSpinner.classList.add('hidden');
+            
+            // Show error message
+            alert('Error extracting text: ' + error.message);
+            console.error('Error:', error);
+          });
+        });
+        
+        // Handle form submission
         document.getElementById('generate-btn').addEventListener('click', function() {
-          const fileInput = document.getElementById('upload-file');
           const textInput = document.getElementById('custom-input');
           const loadingSpinner = document.getElementById('loading-spinner');
           const responseModal = document.getElementById('aiResponseModal');
           const responseContent = document.getElementById('aiResponseContent');
           
-          // Check if either file or text is provided
-          if ((fileInput.files.length === 0) && (textInput.value.trim() === '')) {
+          // Check if text is provided
+          if (textInput.value.trim() === '') {
             alert('Please upload a file or enter text to generate flashcards.');
             return;
           }
@@ -491,14 +546,8 @@
           
           let formData = new FormData();
           
-          // If file is uploaded, use that
-          if (fileInput.files.length > 0) {
-            formData.append('file', fileInput.files[0]);
-          } 
-          // Otherwise use the text input
-          else if (textInput.value.trim() !== '') {
-            formData.append('text', textInput.value);
-          }
+          // Always use the text from the textarea
+          formData.append('text', textInput.value.trim());
           
           // Make the AJAX request
           fetch('/upload', {

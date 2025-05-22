@@ -4,116 +4,93 @@
     <title>Flashcards</title>
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
     <!-- Tailwind CDN -->
+    <script src="script.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./mobilePopup.css" />
-    <script src="./mobilePopup.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <style>
+      @import "tailwindcss";
+      @tailwind base;
+      @tailwind components;
+      @tailwind utilities;
+
       .mobile-popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 1000;
-    animation: fadeIn 0.3s ease-in-out;
-}
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        animation: fadeIn 0.3s ease-in-out;
+      }
 
-.mobile-popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    z-index: 1001;
-    max-width: 90%;
-    width: 400px;
-    text-align: center;
-    animation: slideIn 0.4s ease-out;
-}
+      .mobile-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        z-index: 1001;
+        max-width: 90%;
+        width: 400px;
+        text-align: center;
+        animation: slideIn 0.4s ease-out;
+      }
 
-.mobile-popup-content h3 {
-    margin-top: 0;
-    color: #333;
-    font-size: 1.5em;
-}
+      .mobile-popup-content h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.5em;
+      }
 
-.mobile-popup-content p {
-    margin: 15px 0;
-    color: #555;
-}
+      .mobile-popup-content p {
+        margin: 15px 0;
+        color: #555;
+      }
 
-.mobile-popup-close {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
-}
+      .mobile-popup-close {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.2s;
+      }
 
-.mobile-popup-close:hover {
-    background-color: #45a049;
-}
+      .mobile-popup-close:hover {
+        background-color: #45a049;
+      }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
 
-@keyframes slideIn {
-    from { transform: translate(-50%, -60%); opacity: 0; }
-    to { transform: translate(-50%, -50%); opacity: 1; }
-}
-
+      @keyframes slideIn {
+        from {
+          transform: translate(-50%, -60%);
+          opacity: 0;
+        }
+        to {
+          transform: translate(-50%, -50%);
+          opacity: 1;
+        }
+      }
     </style>
-    <script>document.addEventListener('DOMContentLoaded', function() {
-    // Check if user is not already on mobile
-    if (window.innerWidth > 768) {
-        // Wait 5 seconds before showing the popup
-        setTimeout(function() {
-            showMobilePopup();
-        }, 5000);
-    }
-});
-
-function showMobilePopup() {
-    // Create popup elements
-    const overlay = document.createElement('div');
-    overlay.className = 'mobile-popup-overlay';
-    
-    const popup = document.createElement('div');
-    popup.className = 'mobile-popup';
-    
-    // Popup content
-    popup.innerHTML = `
-        <div class="mobile-popup-content">
-            <h3>On Mobile?</h3>
-            <p>Switch to full screen for a more immersive flashcard learning experience.</p>
-            <button id="closePopup" class="mobile-popup-close">Got it</button>
-        </div>
-    `;
-    
-    // Add to DOM
-    document.body.appendChild(overlay);
-    document.body.appendChild(popup);
-    
-    // Add event listener to close button
-    document.getElementById('closePopup').addEventListener('click', function() {
-        overlay.remove();
-        popup.remove();
-    });
-}
-</script>
   </head>
 
   <body
@@ -155,7 +132,7 @@ function showMobilePopup() {
           <!-- module options injected by JS -->
         </select>
       </div>
-      <button 
+      <button
         onclick="clearAllStatuses()"
         class="w-full mb-4 px-4 py-2 bg-red-400 hover:bg-red-500 rounded shadow text-white font-semibold"
       >
@@ -252,268 +229,337 @@ function showMobilePopup() {
             >
               Fullscreen
             </button>
+            <button
+              onclick="toggleStudyMode()"
+              id="study-mode-btn"
+              class="col-span-2 md:col-span-4 mt-2 px-4 py-2 bg-purple-400 hover:bg-purple-500 rounded shadow text-white font-semibold"
+            >
+              Study Mode
+            </button>
           </div>
         </div>
       </div>
     </div>
     <script>
-      // ...existing functions...
+              document.addEventListener('DOMContentLoaded', function () {
+          // Check if user is not already on mobile
+          if (window.innerWidth > 768) {
+              // Wait 5 seconds before showing the popup
+              setTimeout(function () {
+                  showMobilePopup();
+              }, 5000);
+          }
+      });
 
-      function toggleFullscreen() {
-        if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen();
-        } else {
-          document.exitFullscreen();
-        }
+      function showMobilePopup() {
+          // Create popup elements
+          const overlay = document.createElement('div');
+          overlay.className = 'mobile-popup-overlay';
+
+          const popup = document.createElement('div');
+          popup.className = 'mobile-popup';
+
+          // Popup content
+          popup.innerHTML = `
+              <div class="mobile-popup-content">
+                  <h3>On Mobile?</h3>
+                  <p>Switch to full screen for a more immersive flashcard learning experience.</p>
+                  <button id="closePopup" class="mobile-popup-close">Got it</button>
+              </div>
+          `;
+
+          // Add to DOM
+          document.body.appendChild(overlay);
+          document.body.appendChild(popup);
+
+          // Add event listener to close button
+          document.getElementById('closePopup').addEventListener('click', function () {
+              overlay.remove();
+              popup.remove();
+          });
       }
 
-      // ...initial render etc...
-    </script>
+      function toggleFullscreen() {
+          if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen();
+          } else {
+              document.exitFullscreen();
+          }
+      }
 
-    <script>
-        const flashcards = {{ flashcards| tojson | safe }};
-        let current = 0;
-        let flipped = false;
+      const flashcards = {{ flashcards| tojson | safe }};
+      let current = 0;
+      let flipped = false;
+      let studyMode = false; // Track if study mode is active
 
-        // load persisted statuses and initialize state
-        const statuses = JSON.parse(localStorage.getItem('flashcardStatuses') || '{}');
-        flashcards.forEach(c => {
+      // load persisted statuses and initialize state
+      const statuses = JSON.parse(localStorage.getItem('flashcardStatuses') || '{}');
+      flashcards.forEach(c => {
           const s = statuses[c.question] || {};
           c.bookmarked = s.bookmarked || false;
-          c.correct   = s.correct   !== undefined ? s.correct : null;
-        });
+          c.correct = s.correct !== undefined ? s.correct : null;
+      });
 
-        let filteredFlashcards = flashcards.slice();
+      let filteredFlashcards = flashcards.slice();
 
-        function renderCard() {
+      function renderCard() {
           const card = filteredFlashcards[current];          // use filtered list
-          
+
           // Create status indicators
           const bookmarkIndicator = card.bookmarked ? '<span class="absolute top-2 right-2 text-xl">⭐</span>' : '';
-          const statusIndicator = card.correct === true 
-            ? '<span class="absolute top-2 left-2 text-xl">✅</span>' 
-            : card.correct === false 
-              ? '<span class="absolute top-2 left-2 text-xl">❌</span>'
-              : '';
-          
-          document.getElementById('card-front').innerHTML = 
-            `${bookmarkIndicator}${statusIndicator}<div class="w-full text-center pt-6">${card.question}</div>`;
+          const statusIndicator = card.correct === true
+              ? '<span class="absolute top-2 left-2 text-xl">✅</span>'
+              : card.correct === false
+                  ? '<span class="absolute top-2 left-2 text-xl">❌</span>'
+                  : '';
 
           // split into paragraphs on blank lines
           const paragraphs = card.answer.split(/\n\s*\n/);
           const htmlAnswer = paragraphs
-            .map(p => {
-              // if any "- " appears, treat as a flat list
-              if (p.includes('- ')) {
-                // drop any leading "- ", then split on "- "
-                const items = p.replace(/^\s*-\s*/, '').split(/-\s+/);
-                return `<ul class="list-disc pl-5">${items
-                  .map(i => `<li>${i.trim().replace(/\n/g,'<br><br>')}</li>`)
-                  .join('')}</ul>`;
-              }
-              // otherwise normal paragraph
-              return `<p>${p.replace(/\n/g, '<br>')}</p>`;
-            })
-            .join('');
-          document.getElementById('card-back').innerHTML = 
-            `${bookmarkIndicator}${statusIndicator}<div class="w-full">${htmlAnswer}</div>`;
+              .map(p => {
+                  // if any "- " appears, treat as a flat list
+                  if (p.includes('- ')) {
+                      // drop any leading "- ", then split on "- "
+                      const items = p.replace(/^\s*-\s*/, '').split(/-\s+/);
+                      return `<ul class="list-disc pl-5">${items
+                          .map(i => `<li>${i.trim().replace(/\n/g, '<br><br>')}</li>`)
+                          .join('')}</ul>`;
+                  }
+                  // otherwise normal paragraph
+                  return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+              })
+              .join('');
+
+          if (studyMode) {
+              // In study mode, show both question and answer on front
+              document.getElementById('card-front').innerHTML = `
+                    ${bookmarkIndicator}${statusIndicator}
+                    <div class="w-full overflow-y-auto max-h-full">
+                      <div class="text-center font-bold text-lg mb-4 pb-2 border-b border-gray-300">Question:</div>
+                      <div class="mb-6">${card.question}</div>
+                      <div class="text-center font-bold text-lg mb-4 pb-2 border-b border-gray-300">Answer:</div>
+                      <div>${htmlAnswer}</div>
+                    </div>
+                  `;
+              // Hide the back in study mode
+              document.getElementById('card-back').innerHTML = '';
+          } else {
+              // Normal mode - separate front and back
+              document.getElementById('card-front').innerHTML =
+                  `${bookmarkIndicator}${statusIndicator}<div class="w-full text-center pt-6">${card.question}</div>`;
+              document.getElementById('card-back').innerHTML =
+                  `${bookmarkIndicator}${statusIndicator}<div class="w-full">${htmlAnswer}</div>`;
+          }
 
           document.getElementById('card-counter').textContent =
-            `Card ${current + 1} of ${filteredFlashcards.length}`;  // update total
+              `Card ${current + 1} of ${filteredFlashcards.length}`;  // update total
           document.getElementById('card-inner').style.transform = 'rotateY(0deg)';
           flipped = false;
           document.querySelector('button[onclick="toggleBookmark()"]').textContent =
-            card.bookmarked ? 'Unbookmark' : 'Bookmark';
-        }
+              card.bookmarked ? 'Unbookmark' : 'Bookmark';
+      }
 
-        function flipCard() {
-            const cardInner = document.getElementById('card-inner');
-            if (!flipped) {
-                cardInner.style.transform = 'rotateY(180deg)';
-                flipped = true;
-            } else {
-                cardInner.style.transform = 'rotateY(0deg)';
-                flipped = false;
-            }
-        }
+      function flipCard() {
+          // Don't flip in study mode
+          if (studyMode) return;
 
-        function nextCard() {
-            if (current < filteredFlashcards.length - 1) {
-                current++;
-                renderCard(); // This already resets to front side
-            }
-        }
-
-        function prevCard() {
-            if (current > 0) {
-                current--;
-                renderCard(); // This already resets to front side
-            }
-        }
-
-        function toggleBookmark() {
-            flashcards[current].bookmarked = !flashcards[current].bookmarked;
-            // persist change
-            statuses[flashcards[current].question] = {
-              bookmarked: flashcards[current].bookmarked,
-              correct:    flashcards[current].correct
-            };
-            localStorage.setItem('flashcardStatuses', JSON.stringify(statuses));
-            renderIndex();
-            renderCard();
-        }
-
-        function markCorrect() {
-            flashcards[current].correct = true;
-            // persist change
-            statuses[flashcards[current].question] = {
-              bookmarked: flashcards[current].bookmarked,
-              correct:    true
-            };
-            localStorage.setItem('flashcardStatuses', JSON.stringify(statuses));
-            renderIndex();
-        }
-
-        function markIncorrect() {
-            flashcards[current].correct = false;
-            // persist change
-            statuses[flashcards[current].question] = {
-              bookmarked: flashcards[current].bookmarked,
-              correct:    false
-            };
-            localStorage.setItem('flashcardStatuses', JSON.stringify(statuses));
-            renderIndex();
-        }
-
-        function goToCard(idx) {
-            current = idx;          // idx refers to position in filteredFlashcards
-            renderCard();
-        }
-
-        // Add swipe functionality for mobile navigation
-        function initSwipeEvents() {
-            const card = document.getElementById('card');
-            let touchStartX = 0;
-            let touchEndX = 0;
-
-            card.addEventListener('touchstart', function(e) {
-                touchStartX = e.changedTouches[0].screenX;
-            }, false);
-
-            card.addEventListener('touchend', function(e) {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
-            }, false);
-
-            function handleSwipe() {
-                const swipeThreshold = 50; // minimum distance required for a swipe
-                const swipeDistance = touchEndX - touchStartX;
-
-                if (swipeDistance > swipeThreshold) {
-                    // Swiped right -> previous card
-                    prevCard();
-                } else if (swipeDistance < -swipeThreshold) {
-                    // Swiped left -> next card
-                    nextCard();
-                }
-                // If swipe distance is less than threshold, do nothing (prevent accidental swipes)
-            }
-        }
-
-        function renderIndex() {
-            const container = document.getElementById('index-container');
-            const modules = {};
-            const selectedModule = document.getElementById('module-filter').value;
-
-            // Group the filtered flashcards by module
-            filteredFlashcards.forEach((card, i) => {
-                const mod = card.module || 'Uncategorized';
-                (modules[mod] = modules[mod] || []).push({ i, card });
-            });
-
-            let html = '';
-            for (const [mod, items] of Object.entries(modules)) {
-                // Only show module heading when in "all" view
-                if (selectedModule === 'all') {
-                    html += `<div class="mb-2"><h3 class="font-bold">${mod}</h3>`;
-                }
-
-                html += `<ul class="list-disc pl-5">`;
-                items.forEach(({ i, card }) => {
-                    const star = card.bookmarked ? '⭐' : '';
-                    const status = card.correct === true ? '✔️' : card.correct === false ? '❌' : '';
-                    // Use sequential numbering within the filtered list
-                    const cardNumber = i + 1;
-                    html += `<li class="cursor-pointer py-1 px-2 rounded hover:bg-gray-100" onclick="goToCard(${i})">Card ${cardNumber} ${star} ${status}</li>`;
-                });
-                html += `</ul>`;
-
-                if (selectedModule === 'all') {
-                    html += `</div>`;
-                }
-            }
-
-            container.innerHTML = html;
-        }
-
-        function applyFilter() {
-            const sel = document.getElementById('module-filter').value;
-            filteredFlashcards = sel === 'all'
-                ? flashcards
-                : flashcards.filter(c => (c.module || 'Uncategorized') === sel);
-                //add more filter categories as needed
-            current = 0;
-            renderCard();
-            renderIndex();
-        }
-
-        function clearAllStatuses() {
-            // Confirm before clearing
-            if (confirm("Are you sure you want to clear all bookmarks and correct/incorrect indicators?")) {
-                // Reset all status indicators in memory
-                flashcards.forEach(card => {
-                    card.bookmarked = false;
-                    card.correct = null;
-                });
-                
-                // Clear the localStorage
-                localStorage.removeItem('flashcardStatuses');
-                
-                // Reset the statuses object
-                Object.keys(statuses).forEach(key => delete statuses[key]);
-                
-                // Re-render current card and index
-                renderCard();
-                renderIndex();
-            }
-        }
-
-        // populate filter dropdown and initial index
-        new Set(flashcards.map(c => c.module || 'Uncategorized')).forEach(mod => {
-            document.getElementById('module-filter')
-                .insertAdjacentHTML('beforeend', `<option value="${mod}">${mod}</option>`);
-        });
-        renderIndex();
-
-        // Tailwind custom class for 3D flip
-        document.head.insertAdjacentHTML('beforeend', `<style>
-          .perspective { perspective: 1000px; }
-          #card-inner {
-              transition: transform 0.5s;
-              transform-style: preserve-3d;
+          const cardInner = document.getElementById('card-inner');
+          if (!flipped) {
+              cardInner.style.transform = 'rotateY(180deg)';
+              flipped = true;
+          } else {
+              cardInner.style.transform = 'rotateY(0deg)';
+              flipped = false;
           }
-          .backface-hidden {
-              backface-visibility: hidden;
-          }
-          .rotate-y-180 {
-              transform: rotateY(180deg);
-          }
-      </style>`);
+      }
 
-        // Initial render
-        renderCard();
-        initSwipeEvents(); // Initialize swipe detection
+      function nextCard() {
+          if (current < filteredFlashcards.length - 1) {
+              current++;
+              renderCard(); // This already resets to front side
+          }
+      }
+
+      function prevCard() {
+          if (current > 0) {
+              current--;
+              renderCard(); // This already resets to front side
+          }
+      }
+
+      function toggleBookmark() {
+          flashcards[current].bookmarked = !flashcards[current].bookmarked;
+          // persist change
+          statuses[flashcards[current].question] = {
+              bookmarked: flashcards[current].bookmarked,
+              correct: flashcards[current].correct
+          };
+          localStorage.setItem('flashcardStatuses', JSON.stringify(statuses));
+          renderIndex();
+          renderCard();
+      }
+
+      function markCorrect() {
+          flashcards[current].correct = true;
+          // persist change
+          statuses[flashcards[current].question] = {
+              bookmarked: flashcards[current].bookmarked,
+              correct: true
+          };
+          localStorage.setItem('flashcardStatuses', JSON.stringify(statuses));
+          renderIndex();
+      }
+
+      function markIncorrect() {
+          flashcards[current].correct = false;
+          // persist change
+          statuses[flashcards[current].question] = {
+              bookmarked: flashcards[current].bookmarked,
+              correct: false
+          };
+          localStorage.setItem('flashcardStatuses', JSON.stringify(statuses));
+          renderIndex();
+      }
+
+      function goToCard(idx) {
+          current = idx;          // idx refers to position in filteredFlashcards
+          renderCard();
+      }
+
+      // Add swipe functionality for mobile navigation
+      function initSwipeEvents() {
+          const card = document.getElementById('card');
+          let touchStartX = 0;
+          let touchEndX = 0;
+
+          card.addEventListener('touchstart', function (e) {
+              touchStartX = e.changedTouches[0].screenX;
+          }, false);
+
+          card.addEventListener('touchend', function (e) {
+              touchEndX = e.changedTouches[0].screenX;
+              handleSwipe();
+          }, false);
+
+          function handleSwipe() {
+              const swipeThreshold = 50; // minimum distance required for a swipe
+              const swipeDistance = touchEndX - touchStartX;
+
+              if (swipeDistance > swipeThreshold) {
+                  // Swiped right -> previous card
+                  prevCard();
+              } else if (swipeDistance < -swipeThreshold) {
+                  // Swiped left -> next card
+                  nextCard();
+              }
+              // If swipe distance is less than threshold, do nothing (prevent accidental swipes)
+          }
+      }
+
+      function toggleStudyMode() {
+          studyMode = !studyMode;
+          const studyModeBtn = document.getElementById('study-mode-btn');
+          studyModeBtn.textContent = studyMode ? 'Normal Mode' : 'Study Mode';
+          studyModeBtn.classList.toggle('bg-purple-400', !studyMode);
+          studyModeBtn.classList.toggle('hover:bg-purple-500', !studyMode);
+          studyModeBtn.classList.toggle('bg-purple-600', studyMode);
+          studyModeBtn.classList.toggle('hover:bg-purple-700', studyMode);
+          renderCard();
+      }
+
+      function renderIndex() {
+          const container = document.getElementById('index-container');
+          const modules = {};
+          const selectedModule = document.getElementById('module-filter').value;
+
+          // Group the filtered flashcards by module
+          filteredFlashcards.forEach((card, i) => {
+              const mod = card.module || 'Uncategorized';
+              (modules[mod] = modules[mod] || []).push({ i, card });
+          });
+
+          let html = '';
+          for (const [mod, items] of Object.entries(modules)) {
+              // Only show module heading when in "all" view
+              if (selectedModule === 'all') {
+                  html += `<div class="mb-2"><h3 class="font-bold">${mod}</h3>`;
+              }
+
+              html += `<ul class="list-disc pl-5">`;
+              items.forEach(({ i, card }) => {
+                  const star = card.bookmarked ? '⭐' : '';
+                  const status = card.correct === true ? '✔️' : card.correct === false ? '❌' : '';
+                  // Use sequential numbering within the filtered list
+                  const cardNumber = i + 1;
+                  html += `<li class="cursor-pointer py-1 px-2 rounded hover:bg-gray-100" onclick="goToCard(${i})">Card ${cardNumber} ${star} ${status}</li>`;
+              });
+              html += `</ul>`;
+
+              if (selectedModule === 'all') {
+                  html += `</div>`;
+              }
+          }
+
+          container.innerHTML = html;
+      }
+
+      function applyFilter() {
+          const sel = document.getElementById('module-filter').value;
+          filteredFlashcards = sel === 'all'
+              ? flashcards
+              : flashcards.filter(c => (c.module || 'Uncategorized') === sel);
+          //add more filter categories as needed
+          current = 0;
+          renderCard();
+          renderIndex();
+      }
+
+      function clearAllStatuses() {
+          // Confirm before clearing
+          if (confirm("Are you sure you want to clear all bookmarks and correct/incorrect indicators?")) {
+              // Reset all status indicators in memory
+              flashcards.forEach(card => {
+                  card.bookmarked = false;
+                  card.correct = null;
+              });
+
+              // Clear the localStorage
+              localStorage.removeItem('flashcardStatuses');
+
+              // Reset the statuses object
+              Object.keys(statuses).forEach(key => delete statuses[key]);
+
+              // Re-render current card and index
+              renderCard();
+              renderIndex();
+          }
+      }
+
+      // populate filter dropdown and initial index
+      new Set(flashcards.map(c => c.module || 'Uncategorized')).forEach(mod => {
+          document.getElementById('module-filter')
+              .insertAdjacentHTML('beforeend', `<option value="${mod}">${mod}</option>`);
+      });
+      renderIndex();
+
+      // Tailwind custom class for 3D flip
+      document.head.insertAdjacentHTML('beforeend', `<style>
+                .perspective { perspective: 1000px; }
+                #card-inner {
+                    transition: transform 0.5s;
+                    transform-style: preserve-3d;
+                }
+                .backface-hidden {
+                    backface-visibility: hidden;
+                }
+                .rotate-y-180 {
+                    transform: rotateY(180deg);
+                }
+            </style>`);
+
+      // Initial render
+      renderCard();
+      initSwipeEvents(); // Initialize swipe detection
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
   </body>
 </html>

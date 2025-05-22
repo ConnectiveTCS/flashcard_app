@@ -86,6 +86,73 @@
           opacity: 1;
         }
       }
+
+      /* Image modal styles */
+      .image-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+
+      .image-modal-content {
+        max-width: 90%;
+        max-height: 90%;
+        animation: zoomIn 0.3s ease-out;
+        position: relative;
+      }
+
+      .image-modal-content img {
+        max-width: 100%;
+        max-height: 90vh;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      }
+
+      .image-modal-close {
+        position: absolute;
+        top: -30px;
+        right: -30px;
+        font-size: 24px;
+        color: white;
+        cursor: pointer;
+        background-color: rgba(0, 0, 0, 0.5);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .image-icon {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        font-size: 1.5rem;
+        color: #4299e1;
+        cursor: pointer;
+        z-index: 10;
+      }
+
+      @keyframes zoomIn {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
     </style>
   </head>
 
@@ -236,6 +303,15 @@
         </div>
       </div>
     </div>
+
+    <!-- Add the image modal -->
+    <div id="imageModal" class="image-modal-overlay" onclick="closeImageModal(event)">
+      <div class="image-modal-content">
+        <img id="modalImage" src="" alt="Flashcard Image">
+        <span class="image-modal-close" onclick="closeImageModal(event)">×</span>
+      </div>
+    </div>
+
     <script>
               document.addEventListener('DOMContentLoaded', function () {
           // Check if user is not already on mobile
@@ -311,6 +387,10 @@
               : card.correct === false
                   ? '<span class="absolute top-2 left-2 text-xl">❌</span>'
                   : '';
+          
+          // Add image icon if the card has an image link and modify the handling
+          const imageIndicator = card.link ? 
+              `<span class="image-icon" onclick="openImageModal('${card.link}', event)" title="View image">🖼️</span>` : '';
 
           // split into paragraphs on blank lines
           const paragraphs = card.answer.split(/\n\s*\n/);
@@ -332,12 +412,13 @@
           if (studyMode) {
               // In study mode, show both question and answer on front
               document.getElementById('card-front').innerHTML = `
-                    ${bookmarkIndicator}${statusIndicator}
+                    ${bookmarkIndicator}${statusIndicator}${imageIndicator}
                     <div class="w-full overflow-y-auto max-h-full">
                       <div class="text-center font-bold text-lg mb-4 pb-2 border-b border-gray-300">Question:</div>
                       <div class="mb-6">${card.question}</div>
                       <div class="text-center font-bold text-lg mb-4 pb-2 border-b border-gray-300">Answer:</div>
                       <div>${htmlAnswer}</div>
+                      ${card.link ? `<div class="mt-3 text-center"><img src="${card.link}" class="max-w-full max-h-40 mx-auto" onerror="this.style.display='none';this.onerror=null;"></div>` : ''}
                     </div>
                   `;
               // Hide the back in study mode
@@ -345,9 +426,9 @@
           } else {
               // Normal mode - separate front and back
               document.getElementById('card-front').innerHTML =
-                  `${bookmarkIndicator}${statusIndicator}<div class="w-full text-center pt-6">${card.question}</div>`;
+                  `${bookmarkIndicator}${statusIndicator}${imageIndicator}<div class="w-full text-center pt-6">${card.question}</div>`;
               document.getElementById('card-back').innerHTML =
-                  `${bookmarkIndicator}${statusIndicator}<div class="w-full">${htmlAnswer}</div>`;
+                  `${bookmarkIndicator}${statusIndicator}${imageIndicator}<div class="w-full">${htmlAnswer}</div>`;
           }
 
           document.getElementById('card-counter').textContent =
@@ -533,6 +614,60 @@
               renderIndex();
           }
       }
+
+      // Image modal functions
+      function openImageModal(imageSrc, event) {
+          // Prevent the card from flipping when clicking the image icon
+          event.stopPropagation();
+          
+          const modal = document.getElementById('imageModal');
+          const modalImg = document.getElementById('modalImage');
+          
+          // Handle relative URLs properly by ensuring they're properly resolved
+          // If the path starts with '/', assume it's relative to the Flask app root
+          if (imageSrc && imageSrc.startsWith('/')) {
+              // Use Flask's static URL construction
+              imageSrc = imageSrc.startsWith('/static/') ? imageSrc : `/static${imageSrc}`;
+          }
+          
+          // Add error handling for image loading
+          modalImg.onerror = function() {
+              this.onerror = null;
+              this.src = '';
+              alert('Failed to load image. The path may be incorrect.');
+              modal.style.display = 'none';
+              document.body.style.overflow = '';
+          };
+          
+          modalImg.src = imageSrc;
+          modal.style.display = 'flex';
+          
+          // Prevent scrolling when modal is open
+          document.body.style.overflow = 'hidden';
+      }
+      
+      function closeImageModal(event) {
+          // Only close if clicking outside the image or on the close button
+          if (event.target.id === 'imageModal' || 
+              event.target.classList.contains('image-modal-close')) {
+              const modal = document.getElementById('imageModal');
+              modal.style.display = 'none';
+              
+              // Re-enable scrolling
+              document.body.style.overflow = '';
+          }
+      }
+
+      // Close modal with ESC key
+      document.addEventListener('keydown', function(event) {
+          if (event.key === 'Escape') {
+              const modal = document.getElementById('imageModal');
+              if (modal.style.display === 'flex') {
+                  modal.style.display = 'none';
+                  document.body.style.overflow = '';
+              }
+          }
+      });
 
       // populate filter dropdown and initial index
       new Set(flashcards.map(c => c.module || 'Uncategorized')).forEach(mod => {

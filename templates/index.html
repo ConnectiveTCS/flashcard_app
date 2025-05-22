@@ -4,8 +4,8 @@
     <title>Flashcards</title>
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
     <!-- Tailwind CDN -->
-    <script src="script.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
     <link
       href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css"
       rel="stylesheet"
@@ -13,10 +13,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <style>
-      @import "tailwindcss";
-      @tailwind base;
-      @tailwind components;
-      @tailwind utilities;
 
       .mobile-popup-overlay {
         position: fixed;
@@ -287,7 +283,10 @@
           }
       }
 
+      // The line below uses a template variable that will be replaced server-side
+      /* eslint-disable */
       const flashcards = {{ flashcards| tojson | safe }};
+      /* eslint-enable */
       let current = 0;
       let flipped = false;
       let studyMode = false; // Track if study mode is active

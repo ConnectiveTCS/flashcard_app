@@ -153,6 +153,94 @@
           transform: scale(1);
         }
       }
+
+      /* Button flash effects */
+      .btn-flash-correct {
+        animation: flashGreen 0.3s;
+      }
+      
+      .btn-flash-incorrect {
+        animation: flashRed 0.3s;
+      }
+      
+      .btn-flash-bookmark {
+        animation: flashYellow 0.3s;
+      }
+      
+      .btn-flash-study {
+        animation: flashPurple 0.3s;
+      }
+      
+      @keyframes flashGreen {
+        0% { background-color: #4ade80; }
+        100% { background-color: #22c55e; }
+      }
+      
+      @keyframes flashRed {
+        0% { background-color: #f87171; }
+        100% { background-color: #ef4444; }
+      }
+      
+      @keyframes flashYellow {
+        0% { background-color: #fcd34d; }
+        100% { background-color: #f59e0b; }
+      }
+      
+      @keyframes flashPurple {
+        0% { background-color: #c084fc; }
+        100% { background-color: #9333ea; }
+      }
+
+      /* Confirmation modal styles */
+      .confirmation-modal {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-100px);
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 12px 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 2500;
+        text-align: center;
+        min-width: 200px;
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+      }
+      
+      .confirmation-modal.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+      
+      .confirmation-modal-icon {
+        font-size: 24px;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      
+      .confirmation-modal-message {
+        display: inline-block;
+        vertical-align: middle;
+        font-weight: 500;
+        color: #333;
+      }
+      
+      .confirmation-correct {
+        border-left: 4px solid #22c55e;
+      }
+      
+      .confirmation-incorrect {
+        border-left: 4px solid #ef4444;
+      }
+      
+      .confirmation-bookmark {
+        border-left: 4px solid #f59e0b;
+      }
+      
+      .confirmation-study {
+        border-left: 4px solid #9333ea;
+      }
     </style>
   </head>
 
@@ -309,6 +397,12 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Add the confirmation modal -->
+    <div id="confirmationModal" class="confirmation-modal">
+      <span class="confirmation-modal-icon" id="confirmationIcon"></span>
+      <span class="confirmation-modal-message" id="confirmationMessage"></span>
     </div>
 
     <!-- Add the image modal -->
@@ -480,6 +574,40 @@
           }
       }
 
+      function flashButtonEffect(buttonSelector, flashClass) {
+        const button = document.querySelector(buttonSelector);
+        if (button) {
+          button.classList.add(flashClass);
+          setTimeout(() => {
+            button.classList.remove(flashClass);
+          }, 300);
+        }
+      }
+
+      function showConfirmationModal(message, iconClass, modalClass) {
+        const modal = document.getElementById('confirmationModal');
+        const icon = document.getElementById('confirmationIcon');
+        const messageElement = document.getElementById('confirmationMessage');
+        
+        // Remove previous classes and add the appropriate one
+        modal.className = 'confirmation-modal';
+        modal.classList.add(modalClass);
+        
+        // Set the icon and message
+        icon.textContent = iconClass;
+        messageElement.textContent = message;
+        
+        // Show the modal
+        setTimeout(() => {
+          modal.classList.add('show');
+        }, 10);
+        
+        // Hide the modal automatically after 1.5 seconds
+        setTimeout(() => {
+          modal.classList.remove('show');
+        }, 1500);
+      }
+
       function toggleBookmark() {
           flashcards[current].bookmarked = !flashcards[current].bookmarked;
           // persist change
@@ -490,6 +618,13 @@
           localStorage.setItem('flashcardStatuses', JSON.stringify(statuses));
           renderIndex();
           renderCard();
+          
+          // Add visual feedback
+          flashButtonEffect('button[onclick="toggleBookmark()"]', 'btn-flash-bookmark');
+          
+          // Show confirmation modal
+          const message = flashcards[current].bookmarked ? 'Card bookmarked' : 'Bookmark removed';
+          showConfirmationModal(message, '⭐', 'confirmation-bookmark');
       }
 
       function markCorrect() {
@@ -501,6 +636,12 @@
           };
           localStorage.setItem('flashcardStatuses', JSON.stringify(statuses));
           renderIndex();
+          
+          // Add visual feedback
+          flashButtonEffect('button[onclick="markCorrect()"]', 'btn-flash-correct');
+          
+          // Show confirmation modal
+          showConfirmationModal('Marked as correct', '✅', 'confirmation-correct');
       }
 
       function markIncorrect() {
@@ -512,6 +653,12 @@
           };
           localStorage.setItem('flashcardStatuses', JSON.stringify(statuses));
           renderIndex();
+          
+          // Add visual feedback
+          flashButtonEffect('button[onclick="markIncorrect()"]', 'btn-flash-incorrect');
+          
+          // Show confirmation modal
+          showConfirmationModal('Marked as incorrect', '❌', 'confirmation-incorrect');
       }
 
       function goToCard(idx) {
@@ -558,6 +705,13 @@
           studyModeBtn.classList.toggle('bg-purple-600', studyMode);
           studyModeBtn.classList.toggle('hover:bg-purple-700', studyMode);
           renderCard();
+          
+          // Add visual feedback
+          flashButtonEffect('#study-mode-btn', 'btn-flash-study');
+          
+          // Show confirmation modal
+          const message = studyMode ? 'Study mode enabled' : 'Normal mode enabled';
+          showConfirmationModal(message, '📚', 'confirmation-study');
       }
 
       function renderIndex() {

@@ -13,7 +13,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 # Configuration
 PIPEDREAM_URL = "https://eoosvr9vgrfl7zj.m.pipedream.net" # Update with a working Pipedream endpoint
 # If direct OpenAI access is needed for fallback
-OPENAI_API_KEY =  # Configure your OpenAI API key here or via env var
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "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") # Configure your OpenAI API key here or via env var
 
 # For debugging - set to True to print detailed API request info
 DEBUG_MODE = True
